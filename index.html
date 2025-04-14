@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>URL Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, button {
+      padding: 8px;
+      margin-top: 5px;
+      width: 300px;
+      font-size: 16px;
+    }
+    button {
+      cursor: pointer;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      margin-top: 15px;
+    }
+    #result {
+      margin-top: 20px;
+      font-weight: bold;
+      word-break: break-word;
+    }
+    #welcome {
+      margin-top: 30px;
+      font-size: 18px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>URL Generator</h1>
+
+  <label for="fromInput">Nama Pengantin ('from' parameter):</label><br>
+  <input type="text" id="fromInput" placeholder="contoh: Dimas & Githa"><br><br>
+
+  <label for="toInput">Nama Tamu ('to' parameter - opsional):</label><br>
+  <input type="text" id="toInput" placeholder="contoh: Heru dan Partner"><br><br>
+
+  <button onclick="generateUrl()">Generate URL</button>
+
+  <h2>Hasil URL:</h2>
+  <p id="result"></p>
+
+  <script>
+    function toFormUrlEncoded(str) {
+      return encodeURIComponent(str).replace(/%20/g, '+');
+    }
+
+    function generateUrl() {
+      const base = 'hy-wedding.vercel.app/';
+      const from = document.getElementById('fromInput').value.trim();
+      const to = document.getElementById('toInput').value.trim();
+
+      if (from === '') {
+        document.getElementById('result').textContent = 'Mohon isi nama pengantin!';
+        return;
+      }
+
+      const encodedFrom = toFormUrlEncoded(from);
+      const finalUrl = to
+        ? `${base}?from=${encodedFrom}&to=${toFormUrlEncoded(to)}`
+        : `${base}?from=${encodedFrom}`;
+
+      document.getElementById('result').textContent = finalUrl;
+    }
+
+    // Ambil parameter dari URL
+    const params = new URLSearchParams(window.location.search);
+    const to = params.get("to");
+
+    // Tampilkan nama (decode agar + jadi spasi)
+    const nameEl = document.getElementById("Name");
+
+    if (to && nameEl && welcomeEl) {
+      const decodedName = decodeURIComponent(to.replace(/\+/g, ' '));
+      nameEl.textContent = decodedName;
+      welcomeEl.style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
