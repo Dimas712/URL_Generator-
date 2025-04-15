@@ -4,175 +4,51 @@
   <meta charset="UTF-8">
   <title>URL Generator dengan Excel</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 40px;
-    }
-
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: #fff;
-      padding: 30px 40px;
-      border-radius: 10px;
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    }
-
-    h1, h2 {
-      text-align: center;
-      color: #333;
-    }
-
-    label {
-      display: block;
-      margin-top: 15px;
-      font-weight: bold;
-      color: #555;
-    }
-
-    input[type="text"], input[type="file"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      background-color: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 16px;
-      margin-top: 20px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #45a049;
-    }
-
-    #result, #bulkResult {
-      margin-top: 20px;
-      background: #f0f0f0;
-      padding: 15px;
-      border-radius: 6px;
-      font-family: monospace;
-      white-space: pre-wrap;
-      word-break: break-word;
-      color: #333;
-    }
-
-    hr {
-      margin: 40px 0;
-      border: none;
-      border-top: 1px solid #ddd;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
-  <div class="container">
-    <h1>URL Generator</h1>
-
-    <label for="baseInput">Base URL:</label>
-    <input type="text" id="baseInput" value="https://hy-wedding.vercel.app/" placeholder="contoh: https://domain.com/">
-
-    <label for="fromInput">Nama Pengantin ('from' parameter):</label>
-    <input type="text" id="fromInput" placeholder="contoh: Dimas & Githa">
-
-    <label for="toInput">Nama Tamu ('to' parameter - opsional):</label>
-    <input type="text" id="toInput" placeholder="contoh: Heru dan Partner">
-
-    <button onclick="generateUrl()">Generate URL</button>
-
-    <h2>Hasil URL:</h2>
-    <p id="result"></p>
-
-    <hr>
-
-    <h2>Upload Excel untuk Generate Banyak URL</h2>
-    <input type="file" id="excelFile" accept=".xlsx" />
-    <button onclick="handleExcel()">Proses Excel</button>
-
-    <h2>Hasil URL dari Excel:</h2>
-    <div id="bulkResult"></div>
+  <div class="flex-container">
+    <!-- Kolom Kiri - Manual -->
+    <div class="flex-item">
+      <h2>Generate Manual</h2>
+  
+      <div class="form-group">
+        <label for="baseInput">Base URL:</label>
+        <input type="text" id="baseInput" placeholder="https://">
+      </div>
+  
+      <div class="form-group">
+        <label for="fromInput">Nama Pengantin:</label>
+        <input type="text" id="fromInput" placeholder="contoh: Dimas & Githa">
+      </div>
+  
+      <div class="form-group">
+        <label for="toInput">Nama Tamu:</label>
+        <input type="text" id="toInput" placeholder="contoh: Heru dan Partner">
+      </div>
+  
+      <button onclick="generateUrl()">Generate URL</button>
+  
+      <h3>Hasil URL:</h3>
+      <p id="result"></p>
+    </div>
+  
+    <!-- Kolom Kanan - Excel -->
+    <div class="flex-item">
+      <h2>Generate via Excel</h2>
+  
+      <div class="form-group">
+        <label for="excelFile">Upload File Excel:</label>
+        <input type="file" id="excelFile" accept=".xlsx" />
+      </div>
+  
+      <button onclick="handleExcel()">Proses Excel</button>
+  
+      <h3>Hasil URL dari Excel:</h3>
+      <div id="bulkResult"></div>
+    </div>
   </div>
-
-  <script>
-    function toFormUrlEncoded(str) {
-      return encodeURIComponent(str).replace(/%20/g, '+');
-    }
-
-    function generateUrl() {
-      const base = document.getElementById('baseInput').value.trim();
-      const from = document.getElementById('fromInput').value.trim();
-      const to = document.getElementById('toInput').value.trim();
-
-      if (from === '') {
-        document.getElementById('result').textContent = 'Mohon isi nama pengantin!';
-        return;
-      }
-
-      const encodedFrom = toFormUrlEncoded(from);
-      const finalUrl = to
-        ? `${base}?from=${encodedFrom}&to=${toFormUrlEncoded(to)}`
-        : `${base}?from=${encodedFrom}`;
-
-      document.getElementById('result').textContent = finalUrl;
-    }
-
-    function handleExcel() {
-      const fileInput = document.getElementById('excelFile');
-      const file = fileInput.files[0];
-
-      if (!file) {
-        alert("Silakan unggah file Excel terlebih dahulu.");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function (e) {
-        const data = new Uint8Array(e.target.result);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-
-        const base = document.getElementById('baseInput').value.trim();
-        let from = document.getElementById('fromInput').value.trim();
-        if (!from && jsonData.length > 0 && jsonData[0].from) {
-          from = jsonData[0].from;
-        }
-
-        if (!from) {
-          document.getElementById('bulkResult').textContent = 'Mohon isi nama pengantin di input atau Excel.';
-          return;
-        }
-
-        const encodedFrom = toFormUrlEncoded(from);
-        let output = '';
-        jsonData.forEach((row, index) => {
-          const toName = row.to ? toFormUrlEncoded(row.to) : '';
-          const url = toName
-            ? `${base}?from=${encodedFrom}&to=${toName}`
-            : `${base}?from=${encodedFrom}`;
-          output += `${index + 1}. ${decodeURIComponent(url)}\n`;
-        });
-
-        document.getElementById('bulkResult').textContent = output;
-      };
-
-      reader.readAsArrayBuffer(file);
-    }
-  </script>
+  <script src="app.js"></script>
 
 </body>
 </html>
